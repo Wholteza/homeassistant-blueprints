@@ -1,0 +1,67 @@
+blueprint:
+  name: Turn on nightlight when daytime is over
+  description: Turn on nightlight automation when daytime is over
+  domain: automation
+  source_url: https://github.com/Wholteza/homeassistant-blueprints/blob/main/turn_on_nightlight_when_daytime_is_over.yaml
+  input:
+    automation_target:
+      name: Nightlight automation
+      description: Automation that turns on nightlight
+      selector:
+        target:
+          entity:
+            domain: automation
+    scene_trigger:
+      name: Daylight scene
+      description: Scene that turns on daylight so daylight can be switched of if it was turned on after daytime
+      selector:
+        target:
+          entity:
+            domain: scene
+    daytime_boolean_entity:
+      name: Is daytime boolean
+      description: Entity that states if it is daytime or not
+      default: input_boolean.isdaytime
+      selector:
+        entity:
+          domain: input_boolean
+    automation_active_boolean_entity:
+      name: Is automation activated boolean
+      description: Entity that states if automation should be run or not
+      selector:
+        entity:
+          domain: input_boolean
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: call_service
+    event_data:
+      domain: scene
+      service: turn_on
+      service_data:
+        entity_id: !input scene_trigger
+  - platform: state
+    entity_id: !input daytime_boolean_entity
+    from: 'on'
+    to: 'off'
+
+
+condition:
+  condition: and
+  conditions:
+    - condition: state
+      entity_id: !input daytime_boolean_entity
+      state: 'off'
+    - condition: state
+      entity_id: !input automation_active_boolean_entity
+      state: 'on'
+
+action:
+  - service: automation.trigger
+    data: {}
+    entity_id: automation.kitchen_motion_sensor_triggered_nighttime
