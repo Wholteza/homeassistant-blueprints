@@ -1,0 +1,66 @@
+blueprint:
+  name: Motion detected scene daytime
+  description: Turn on a scene when motion is detected during daytime
+  domain: automation
+  source_url: 
+  input:
+    motion_entity:
+      name: Motion Sensor
+      description: Motion sensor entity to trigger on
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    scene_active_target:
+      name: Active scene
+      description: Scene that gets turned on by the motion sensor
+      selector:
+        target:
+          entity:
+            domain: scene
+    scene_inactive_target:
+      name: Inactive scene
+      description: Scene that gets restored after the delay time period
+      selector:
+        target:
+          entity:
+            domain: scene
+    daytime_boolean_entity:
+      name: Is daytime boolean
+      description: Entity that states if it is daytime or not
+      default: input_boolean.isdaytime
+      selector:
+        entity:
+          domain: input_boolean
+    automation_active_boolean_entity:
+      name: Is automation activated boolean
+      description: Entity that states if automation should be run or not
+      selector:
+        entity:
+          domain: input_boolean
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  type: motion
+  platform: device
+  entity_id: !input motion_entity
+  domain: binary_sensor
+
+condition:
+  condition: and
+  conditions:
+    - condition: state
+      entity_id: !input daytime_boolean_entity
+      state: 'on'
+    - condition: state
+      entity_id: !input automation_active_boolean_entity
+      state: 'on'
+
+action:
+  - scene: !input scene_active_target
+  - delay: '00:05:00'
+  - scene: !input scene_inactive_target
