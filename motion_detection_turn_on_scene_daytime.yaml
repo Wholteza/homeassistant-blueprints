@@ -2,7 +2,7 @@ blueprint:
   name: Motion detected scene daytime
   description: Turn on a scene when motion is detected during daytime
   domain: automation
-  source_url: 
+  source_url: https://github.com/Wholteza/homeassistant-blueprints/blob/main/motion_detection_turn_on_scene_daytime.yaml
   input:
     motion_entity:
       name: Motion Sensor
