@@ -1,0 +1,46 @@
+blueprint:
+  name: Turn on daylight when nighttime is over
+  description: Turn on daylight scene when nighttime is over
+  domain: automation
+  source_url: https://github.com/Wholteza/homeassistant-blueprints/blob/main/turn_on_daylight_when_nighttime_is_over.yaml
+  input:
+    scene_target:
+      name: Daylight scene
+      description: Scene that turns on daylight
+      selector:
+        target:
+          entity:
+            domain: scene
+    daytime_boolean_entity:
+      name: Is daytime boolean
+      description: Entity that states if it is daytime or not
+      default: input_boolean.isdaytime
+      selector:
+        entity:
+          domain: input_boolean
+    automation_active_boolean_entity:
+      name: Is automation activated boolean
+      description: Entity that states if automation should be run or not
+      selector:
+        entity:
+          domain: input_boolean
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input daytime_boolean_entity
+  from: "off"
+  to: "on"
+
+condition:
+  conditions:
+    - condition: state
+      entity_id: !input automation_active_boolean_entity
+      state: 'on'
+
+action:
+  - scene: !input scene_target
